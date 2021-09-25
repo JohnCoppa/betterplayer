@@ -36,7 +36,7 @@ class BetterPlayerCupertinoControls extends StatefulWidget {
 
 class _BetterPlayerCupertinoControlsState
     extends BetterPlayerControlsState<BetterPlayerCupertinoControls> {
-  final marginSize = 5.0;
+  final marginSize = 15.0;
   VideoPlayerValue? _latestValue;
   double? _latestVolume;
   bool _hideStuff = true;
@@ -178,57 +178,60 @@ class _BetterPlayerCupertinoControlsState
       opacity: _hideStuff ? 0.0 : 1.0,
       duration: _controlsConfiguration.controlsHideTime,
       onEnd: _onPlayerHide,
-      child: Container(
-        alignment: Alignment.bottomCenter,
-        margin: EdgeInsets.all(marginSize),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            height: barHeight,
-            decoration: BoxDecoration(
-              color: backgroundColor,
+      child: SafeArea(
+        child: Container(
+          alignment: Alignment.bottomCenter,
+          margin: EdgeInsets.all(marginSize),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              height: barHeight,
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: backgroundColor,
+              ),
+              child: _betterPlayerController!.isLiveStream()
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        const SizedBox(width: 8),
+                        if (_controlsConfiguration.enablePlayPause)
+                          _buildPlayPause(_controller!, iconColor, barHeight)
+                        else
+                          const SizedBox(),
+                        const SizedBox(width: 8),
+                        _buildLiveWidget(),
+                      ],
+                    )
+                  : Row(
+                      children: <Widget>[
+                        if (_controlsConfiguration.enableSkips)
+                          _buildSkipBack(iconColor, barHeight)
+                        else
+                          const SizedBox(),
+                        if (_controlsConfiguration.enablePlayPause)
+                          _buildPlayPause(_controller!, iconColor, barHeight)
+                        else
+                          const SizedBox(),
+                        if (_controlsConfiguration.enableSkips)
+                          _buildSkipForward(iconColor, barHeight)
+                        else
+                          const SizedBox(),
+                        if (_controlsConfiguration.enableProgressText)
+                          _buildPosition()
+                        else
+                          const SizedBox(),
+                        if (_controlsConfiguration.enableProgressBar)
+                          _buildProgressBar()
+                        else
+                          const SizedBox(),
+                        if (_controlsConfiguration.enableProgressText)
+                          _buildRemaining()
+                        else
+                          const SizedBox()
+                      ],
+                    ),
             ),
-            child: _betterPlayerController!.isLiveStream()
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      const SizedBox(width: 8),
-                      if (_controlsConfiguration.enablePlayPause)
-                        _buildPlayPause(_controller!, iconColor, barHeight)
-                      else
-                        const SizedBox(),
-                      const SizedBox(width: 8),
-                      _buildLiveWidget(),
-                    ],
-                  )
-                : Row(
-                    children: <Widget>[
-                      if (_controlsConfiguration.enableSkips)
-                        _buildSkipBack(iconColor, barHeight)
-                      else
-                        const SizedBox(),
-                      if (_controlsConfiguration.enablePlayPause)
-                        _buildPlayPause(_controller!, iconColor, barHeight)
-                      else
-                        const SizedBox(),
-                      if (_controlsConfiguration.enableSkips)
-                        _buildSkipForward(iconColor, barHeight)
-                      else
-                        const SizedBox(),
-                      if (_controlsConfiguration.enableProgressText)
-                        _buildPosition()
-                      else
-                        const SizedBox(),
-                      if (_controlsConfiguration.enableProgressBar)
-                        _buildProgressBar()
-                      else
-                        const SizedBox(),
-                      if (_controlsConfiguration.enableProgressText)
-                        _buildRemaining()
-                      else
-                        const SizedBox()
-                    ],
-                  ),
           ),
         ),
       ),
@@ -334,7 +337,8 @@ class _BetterPlayerCupertinoControlsState
             child: Container(
               height: barHeight,
               padding: EdgeInsets.symmetric(
-                horizontal: buttonPadding,
+                // horizontal: buttonPadding,
+                horizontal: 20,
               ),
               child: Icon(
                 _controlsConfiguration.overflowMenuIcon,
@@ -495,65 +499,67 @@ class _BetterPlayerCupertinoControlsState
     }
     final barHeight = topBarHeight * 0.8;
     final iconSize = topBarHeight * 0.4;
-    return Container(
-      height: barHeight,
-      margin: EdgeInsets.only(
-        top: marginSize,
-        right: marginSize,
-        left: marginSize,
-      ),
-      child: Row(
-        children: <Widget>[
-          if (_controlsConfiguration.enableFullscreen)
-            _buildExpandButton(
-              backgroundColor,
-              iconColor,
-              barHeight,
-              iconSize,
-              buttonPadding,
-            )
-          else
-            const SizedBox(),
-          const SizedBox(
-            width: 4,
-          ),
-          if (_controlsConfiguration.enablePip)
-            _buildPipButton(
-              backgroundColor,
-              iconColor,
-              barHeight,
-              iconSize,
-              buttonPadding,
-            )
-          else
-            const SizedBox(),
-          const Spacer(),
-          if (_controlsConfiguration.enableMute)
-            _buildMuteButton(
-              _controller,
-              backgroundColor,
-              iconColor,
-              barHeight,
-              iconSize,
-              buttonPadding,
-            )
-          else
-            const SizedBox(),
-          const SizedBox(
-            width: 4,
-          ),
-          if (_controlsConfiguration.enableOverflowMenu)
-            _buildMoreButton(
-              _controller,
-              backgroundColor,
-              iconColor,
-              barHeight,
-              iconSize,
-              buttonPadding,
-            )
-          else
-            const SizedBox(),
-        ],
+    return SafeArea(
+      child: Container(
+        height: barHeight,
+        margin: EdgeInsets.only(
+          top: marginSize,
+          right: marginSize,
+          left: marginSize,
+        ),
+        child: Row(
+          children: <Widget>[
+            if (_controlsConfiguration.enableFullscreen)
+              _buildExpandButton(
+                backgroundColor,
+                iconColor,
+                barHeight,
+                iconSize,
+                buttonPadding,
+              )
+            else
+              const SizedBox(),
+            const SizedBox(
+              width: 4,
+            ),
+            if (_controlsConfiguration.enablePip)
+              _buildPipButton(
+                backgroundColor,
+                iconColor,
+                barHeight,
+                iconSize,
+                buttonPadding,
+              )
+            else
+              const SizedBox(),
+            const Spacer(),
+            if (_controlsConfiguration.enableMute)
+              _buildMuteButton(
+                _controller,
+                backgroundColor,
+                iconColor,
+                barHeight,
+                iconSize,
+                buttonPadding,
+              )
+            else
+              const SizedBox(),
+            const SizedBox(
+              width: 4,
+            ),
+            if (_controlsConfiguration.enableOverflowMenu)
+              _buildMoreButton(
+                _controller,
+                backgroundColor,
+                iconColor,
+                barHeight,
+                iconSize,
+                buttonPadding,
+              )
+            else
+              const SizedBox(),
+          ],
+        ),
       ),
     );
   }
