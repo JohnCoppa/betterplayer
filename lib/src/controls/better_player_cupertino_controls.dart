@@ -178,18 +178,18 @@ class _BetterPlayerCupertinoControlsState
       opacity: _hideStuff ? 0.0 : 1.0,
       duration: _controlsConfiguration.controlsHideTime,
       onEnd: _onPlayerHide,
-      child: SafeArea(
-        child: Container(
-          alignment: Alignment.bottomCenter,
-          margin: EdgeInsets.all(marginSize),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Container(
-              height: barHeight,
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              decoration: BoxDecoration(
-                color: backgroundColor,
-              ),
+      child: Container(
+        alignment: Alignment.bottomCenter,
+        margin: EdgeInsets.all(marginSize),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            height: barHeight,
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+            ),
+            child: SafeArea(
               child: _betterPlayerController!.isLiveStream()
                   ? Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
