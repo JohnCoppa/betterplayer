@@ -181,55 +181,57 @@ class _BetterPlayerCupertinoControlsState
       child: Container(
         alignment: Alignment.bottomCenter,
         margin: EdgeInsets.all(marginSize),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            height: barHeight,
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            decoration: BoxDecoration(
-              color: backgroundColor,
+        child: SafeArea(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              height: barHeight,
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: backgroundColor,
+              ),
+              child: _betterPlayerController!.isLiveStream()
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        const SizedBox(width: 8),
+                        if (_controlsConfiguration.enablePlayPause)
+                          _buildPlayPause(_controller!, iconColor, barHeight)
+                        else
+                          const SizedBox(),
+                        const SizedBox(width: 8),
+                        _buildLiveWidget(),
+                      ],
+                    )
+                  : Row(
+                      children: <Widget>[
+                        if (_controlsConfiguration.enableSkips)
+                          _buildSkipBack(iconColor, barHeight)
+                        else
+                          const SizedBox(),
+                        if (_controlsConfiguration.enablePlayPause)
+                          _buildPlayPause(_controller!, iconColor, barHeight)
+                        else
+                          const SizedBox(),
+                        if (_controlsConfiguration.enableSkips)
+                          _buildSkipForward(iconColor, barHeight)
+                        else
+                          const SizedBox(),
+                        if (_controlsConfiguration.enableProgressText)
+                          _buildPosition()
+                        else
+                          const SizedBox(),
+                        if (_controlsConfiguration.enableProgressBar)
+                          _buildProgressBar()
+                        else
+                          const SizedBox(),
+                        if (_controlsConfiguration.enableProgressText)
+                          _buildRemaining()
+                        else
+                          const SizedBox()
+                      ],
+                    ),
             ),
-            child: _betterPlayerController!.isLiveStream()
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      const SizedBox(width: 8),
-                      if (_controlsConfiguration.enablePlayPause)
-                        _buildPlayPause(_controller!, iconColor, barHeight)
-                      else
-                        const SizedBox(),
-                      const SizedBox(width: 8),
-                      _buildLiveWidget(),
-                    ],
-                  )
-                : Row(
-                    children: <Widget>[
-                      if (_controlsConfiguration.enableSkips)
-                        _buildSkipBack(iconColor, barHeight)
-                      else
-                        const SizedBox(),
-                      if (_controlsConfiguration.enablePlayPause)
-                        _buildPlayPause(_controller!, iconColor, barHeight)
-                      else
-                        const SizedBox(),
-                      if (_controlsConfiguration.enableSkips)
-                        _buildSkipForward(iconColor, barHeight)
-                      else
-                        const SizedBox(),
-                      if (_controlsConfiguration.enableProgressText)
-                        _buildPosition()
-                      else
-                        const SizedBox(),
-                      if (_controlsConfiguration.enableProgressBar)
-                        _buildProgressBar()
-                      else
-                        const SizedBox(),
-                      if (_controlsConfiguration.enableProgressText)
-                        _buildRemaining()
-                      else
-                        const SizedBox()
-                    ],
-                  ),
           ),
         ),
       ),
