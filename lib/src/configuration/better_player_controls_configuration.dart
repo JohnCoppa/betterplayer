@@ -1,10 +1,5 @@
-// Dart imports:
 import 'dart:ui';
-
-// Flutter imports:
 import 'package:better_player/better_player.dart';
-
-// Project imports:
 import 'package:better_player/src/controls/better_player_overflow_menu_item.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -83,8 +78,8 @@ class BetterPlayerControlsConfiguration {
   final Duration controlsHideTime;
 
   ///Parameter used to build custom controls
-  final Widget Function(BetterPlayerController controller)?
-      customControlsBuilder;
+  final Widget Function(BetterPlayerController controller,
+      Function(bool) onPlayerVisibilityChanged)? customControlsBuilder;
 
   ///Parameter used to change theme of the player
   final BetterPlayerTheme? playerTheme;

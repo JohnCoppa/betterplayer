@@ -7,7 +7,7 @@ import 'mock_video_player_controller.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  MockMethodChannel mockMethodChannel = MockMethodChannel();
+  final MockMethodChannel mockMethodChannel = MockMethodChannel();
 
   group(
     "BetterPlayerController tests",
@@ -236,7 +236,7 @@ void main() {
             controlsVisibleEventCount += 1;
           }
           if (event.betterPlayerEventType ==
-              BetterPlayerEventType.controlsHidden) {
+              BetterPlayerEventType.controlsHiddenEnd) {
             controlsHiddenEventCount += 1;
           }
         });

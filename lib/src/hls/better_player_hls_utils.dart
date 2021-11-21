@@ -1,13 +1,10 @@
-// Package imports:
 import 'package:better_player/src/asms/better_player_asms_audio_track.dart';
 import 'package:better_player/src/asms/better_player_asms_data_holder.dart';
 import 'package:better_player/src/asms/better_player_asms_subtitle.dart';
 import 'package:better_player/src/asms/better_player_asms_subtitle_segment.dart';
+import 'package:better_player/src/asms/better_player_asms_track.dart';
 import 'package:better_player/src/asms/better_player_asms_utils.dart';
 import 'package:better_player/src/core/better_player_utils.dart';
-
-// Project imports:
-import 'package:better_player/src/asms/better_player_asms_track.dart';
 import 'package:better_player/src/hls/hls_parser/hls_master_playlist.dart';
 import 'package:better_player/src/hls/hls_parser/hls_media_playlist.dart';
 import 'package:better_player/src/hls/hls_parser/hls_playlist_parser.dart';
@@ -116,7 +113,11 @@ class BetterPlayerHlsUtils {
           // ignore: use_string_buffers
           realUrl += "${split[index]}/";
         }
-        realUrl += segment.url!;
+        if (segment.url?.startsWith("http") == true) {
+          realUrl = segment.url!;
+        } else {
+          realUrl += segment.url!;
+        }
         hlsSubtitlesUrls.add(realUrl);
 
         if (isSegmented) {

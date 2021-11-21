@@ -1,19 +1,14 @@
-// Dart imports:
 import 'dart:async';
-
-// Flutter imports:
 import 'package:better_player/src/configuration/better_player_controls_configuration.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:better_player/src/controls/better_player_multiple_gesture_detector.dart';
-import 'package:flutter/material.dart';
-
-// Project imports:
 import 'package:better_player/src/controls/better_player_controls_state.dart';
 import 'package:better_player/src/controls/better_player_cupertino_progress_bar.dart';
+import 'package:better_player/src/controls/better_player_multiple_gesture_detector.dart';
 import 'package:better_player/src/controls/better_player_progress_colors.dart';
 import 'package:better_player/src/core/better_player_controller.dart';
 import 'package:better_player/src/core/better_player_utils.dart';
 import 'package:better_player/src/video_player/video_player.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class BetterPlayerCupertinoControls extends StatefulWidget {
   ///Callback used to send information if player bar is hidden or not
@@ -39,7 +34,6 @@ class _BetterPlayerCupertinoControlsState
   final marginSize = 15.0;
   VideoPlayerValue? _latestValue;
   double? _latestVolume;
-  bool _hideStuff = true;
   Timer? _hideTimer;
   Timer? _expandCollapseTimer;
   Timer? _initTimer;
@@ -87,18 +81,35 @@ class _BetterPlayerCupertinoControlsState
         ? _controlsConfiguration.controlBarHeight
         : _controlsConfiguration.controlBarHeight + 10;
     const buttonPadding = 10.0;
+    final isFullScreen = _betterPlayerController?.isFullScreen == true;
 
     _wasLoading = isLoading(_latestValue);
+    final controlsColumn = Column(children: <Widget>[
+      _buildTopBar(
+        backgroundColor,
+        iconColor,
+        barHeight,
+        buttonPadding,
+      ),
+      if (_wasLoading)
+        Expanded(child: Center(child: _buildLoadingWidget()))
+      else
+        _buildHitArea(),
+      _buildNextVideoWidget(),
+      _buildBottomBar(
+        backgroundColor,
+        iconColor,
+        barHeight,
+      ),
+    ]);
     return GestureDetector(
       onTap: () {
         if (BetterPlayerMultipleGestureDetector.of(context) != null) {
           BetterPlayerMultipleGestureDetector.of(context)!.onTap?.call();
         }
-        _hideStuff
+        controlsNotVisible
             ? cancelAndRestartTimer()
-            : setState(() {
-                _hideStuff = true;
-              });
+            : changePlayerControlsNotVisible(true);
       },
       onDoubleTap: () {
         if (BetterPlayerMultipleGestureDetector.of(context) != null) {
@@ -113,28 +124,9 @@ class _BetterPlayerCupertinoControlsState
         }
       },
       child: AbsorbPointer(
-        absorbing: _hideStuff,
-        child: Column(
-          children: <Widget>[
-            _buildTopBar(
-              backgroundColor,
-              iconColor,
-              barHeight,
-              buttonPadding,
-            ),
-            if (_wasLoading)
-              Expanded(child: Center(child: _buildLoadingWidget()))
-            else
-              _buildHitArea(),
-            _buildNextVideoWidget(),
-            _buildBottomBar(
-              backgroundColor,
-              iconColor,
-              barHeight,
-            ),
-          ],
-        ),
-      ),
+          absorbing: controlsNotVisible,
+          child:
+              isFullScreen ? SafeArea(child: controlsColumn) : controlsColumn),
     );
   }
 
@@ -175,7 +167,7 @@ class _BetterPlayerCupertinoControlsState
       return const SizedBox();
     }
     return AnimatedOpacity(
-      opacity: _hideStuff ? 0.0 : 1.0,
+      opacity: controlsNotVisible ? 0.0 : 1.0,
       duration: _controlsConfiguration.controlsHideTime,
       onEnd: _onPlayerHide,
       child: Container(
@@ -259,7 +251,7 @@ class _BetterPlayerCupertinoControlsState
     return GestureDetector(
       onTap: _onExpandCollapse,
       child: AnimatedOpacity(
-        opacity: _hideStuff ? 0.0 : 1.0,
+        opacity: controlsNotVisible ? 0.0 : 1.0,
         duration: _controlsConfiguration.controlsHideTime,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10),
@@ -289,22 +281,16 @@ class _BetterPlayerCupertinoControlsState
       child: GestureDetector(
         onTap: _latestValue != null && _latestValue!.isPlaying
             ? () {
-                if (_hideStuff == true) {
+                if (controlsNotVisible == true) {
                   cancelAndRestartTimer();
                 } else {
                   _hideTimer?.cancel();
-
-                  setState(() {
-                    _hideStuff = true;
-                  });
+                  changePlayerControlsNotVisible(true);
                 }
               }
             : () {
                 _hideTimer?.cancel();
-
-                setState(() {
-                  _hideStuff = false;
-                });
+                changePlayerControlsNotVisible(false);
               },
         child: Container(
           color: Colors.transparent,
@@ -326,7 +312,7 @@ class _BetterPlayerCupertinoControlsState
         onShowMoreClicked();
       },
       child: AnimatedOpacity(
-        opacity: _hideStuff ? 0.0 : 1.0,
+        opacity: controlsNotVisible ? 0.0 : 1.0,
         duration: _controlsConfiguration.controlsHideTime,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10.0),
@@ -372,7 +358,7 @@ class _BetterPlayerCupertinoControlsState
         }
       },
       child: AnimatedOpacity(
-        opacity: _hideStuff ? 0.0 : 1.0,
+        opacity: controlsNotVisible ? 0.0 : 1.0,
         duration: _controlsConfiguration.controlsHideTime,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10.0),
@@ -602,10 +588,8 @@ class _BetterPlayerCupertinoControlsState
   @override
   void cancelAndRestartTimer() {
     _hideTimer?.cancel();
-    setState(() {
-      _hideStuff = false;
-      _startHideTimer();
-    });
+    changePlayerControlsNotVisible(false);
+    _startHideTimer();
   }
 
   Future<void> _initialize() async {
@@ -620,31 +604,25 @@ class _BetterPlayerCupertinoControlsState
 
     if (_controlsConfiguration.showControlsOnInitialize) {
       _initTimer = Timer(const Duration(milliseconds: 200), () {
-        setState(() {
-          _hideStuff = false;
-        });
+        changePlayerControlsNotVisible(false);
       });
     }
     _controlsVisibilityStreamSubscription =
         _betterPlayerController!.controlsVisibilityStream.listen((state) {
-      setState(() {
-        _hideStuff = !state;
-      });
-      if (!_hideStuff) {
+      changePlayerControlsNotVisible(!state);
+
+      if (!controlsNotVisible) {
         cancelAndRestartTimer();
       }
     });
   }
 
   void _onExpandCollapse() {
-    setState(() {
-      _hideStuff = true;
-
-      _betterPlayerController!.toggleFullScreen();
-      _expandCollapseTimer = Timer(_controlsConfiguration.controlsHideTime, () {
-        setState(() {
-          cancelAndRestartTimer();
-        });
+    changePlayerControlsNotVisible(true);
+    _betterPlayerController!.toggleFullScreen();
+    _expandCollapseTimer = Timer(_controlsConfiguration.controlsHideTime, () {
+      setState(() {
+        cancelAndRestartTimer();
       });
     });
   }
@@ -661,6 +639,9 @@ class _BetterPlayerCupertinoControlsState
           },
           onDragEnd: () {
             _startHideTimer();
+          },
+          onTapDown: () {
+            cancelAndRestartTimer();
           },
           colors: BetterPlayerProgressColors(
               playedColor: _controlsConfiguration.progressBarPlayedColor,
@@ -679,29 +660,28 @@ class _BetterPlayerCupertinoControlsState
     if (_latestValue?.position != null && _latestValue?.duration != null) {
       isFinished = _latestValue!.position >= _latestValue!.duration!;
     }
-    setState(() {
-      if (_controller!.value.isPlaying) {
-        _hideStuff = false;
-        _hideTimer?.cancel();
-        _betterPlayerController!.pause();
-      } else {
-        cancelAndRestartTimer();
 
-        if (!_controller!.value.initialized) {
-          if (_betterPlayerController!.betterPlayerDataSource?.liveStream ==
-              true) {
-            _betterPlayerController!.play();
-            _betterPlayerController!.cancelNextVideoTimer();
-          }
-        } else {
-          if (isFinished) {
-            _betterPlayerController!.seekTo(const Duration());
-          }
+    if (_controller!.value.isPlaying) {
+      changePlayerControlsNotVisible(false);
+      _hideTimer?.cancel();
+      _betterPlayerController!.pause();
+    } else {
+      cancelAndRestartTimer();
+
+      if (!_controller!.value.initialized) {
+        if (_betterPlayerController!.betterPlayerDataSource?.liveStream ==
+            true) {
           _betterPlayerController!.play();
           _betterPlayerController!.cancelNextVideoTimer();
         }
+      } else {
+        if (isFinished) {
+          _betterPlayerController!.seekTo(const Duration());
+        }
+        _betterPlayerController!.play();
+        _betterPlayerController!.cancelNextVideoTimer();
       }
-    });
+    }
   }
 
   void _startHideTimer() {
@@ -709,22 +689,20 @@ class _BetterPlayerCupertinoControlsState
       return;
     }
     _hideTimer = Timer(const Duration(seconds: 3), () {
-      setState(() {
-        _hideStuff = true;
-      });
+      changePlayerControlsNotVisible(true);
     });
   }
 
   void _updateState() {
     if (mounted) {
-      if (!_hideStuff ||
+      if (!controlsNotVisible ||
           isVideoFinished(_controller!.value) ||
           _wasLoading ||
           isLoading(_controller!.value)) {
         setState(() {
           _latestValue = _controller!.value;
           if (isVideoFinished(_latestValue)) {
-            _hideStuff = false;
+            changePlayerControlsNotVisible(false);
           }
         });
       }
@@ -732,8 +710,8 @@ class _BetterPlayerCupertinoControlsState
   }
 
   void _onPlayerHide() {
-    _betterPlayerController!.toggleControlsVisibility(!_hideStuff);
-    widget.onControlsVisibilityChanged(!_hideStuff);
+    _betterPlayerController!.toggleControlsVisibility(!controlsNotVisible);
+    widget.onControlsVisibilityChanged(!controlsNotVisible);
   }
 
   Widget _buildErrorWidget() {
@@ -805,7 +783,7 @@ class _BetterPlayerCupertinoControlsState
                   betterPlayerController!.betterPlayerGlobalKey!);
             },
             child: AnimatedOpacity(
-              opacity: _hideStuff ? 0.0 : 1.0,
+              opacity: controlsNotVisible ? 0.0 : 1.0,
               duration: _controlsConfiguration.controlsHideTime,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
